@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.metrics.pairwise import pairwise_distances
 
 # Lee el archivo CSV en un DataFrame de Pandas
-df = pd.read_csv('E:\hENRYDATASEMANAS\lab1\movies_dataset_modificado.csv', low_memory=False)
+df = pd.read_csv('movies_dataset_modificado.csv', low_memory=False)
 
 
 # http://127.0.0.1:8000
