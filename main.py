@@ -108,7 +108,7 @@ df2['title'] = df2['title'].astype(str)
 @app.get("/Recomendacion/{titulo}")
 def get_movie_recommendations(titulo:str):
 
-    df1 = df2.sample(n=10000)
+    df1 = df2.sample(n=1000)
     # Obtenga el índice de la película en la similarity matrix 
     
     movie_similarity = 1 - pairwise_distances(df1.pivot_table(index='title',columns='name_Genres', values='vote_average').fillna(0), metric='cosine')
