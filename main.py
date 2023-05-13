@@ -99,34 +99,33 @@ def retorno(pelicula:str):
     
     return {'pelicula': pelicula, 'inversion': inversion, 'ganacia': ganancia, 'retorno': retorno, 'anio': anio}
 
-df2 = df[["title","name_Genres", "name_Genres_str",'vote_average']]
-df2 = df2.dropna(subset=['name_Genres'])
-df2 = df2.dropna(subset=['name_Genres_str'])
-df2 = df2.dropna(subset=['title'])
-df2['title'] = df2['title'].astype(str)
+
+
+df["name_Genres"] = df["name_Genres"].apply(lambda x: x.replace("[", "").replace("]", "").replace("'", "").replace(", ", ","))
+
+data = df[['title', 'vote_average', 'name_Genres', "release_year", "name_production_companies","overview"]]
+
+similarity_matrix = pairwise_distances(data.pivot_table(index='name_Genres', columns='release_year', values='vote_average', fill_value=0), metric='cosine')
+
 
 @app.get("/Recomendacion/{titulo}")
-def get_movie_recommendations(titulo:str):
-
-    df1 = df2.sample(n=5000)
-    # Obtenga el índice de la película en la similarity matrix 
+def recomendacion(titulo:str):
+    # Buscar la película seleccionada por el usuario en el DataFrame
+    idx = data[data['title'] == titulo].index[0]
     
-    movie_similarity = 1- pairwise_distances(df1.pivot_table(index='title',columns='name_Genres', values='vote_average').fillna(0), metric='cosine')
-    movie_index = df2[df2['title'] == titulo].index[0]
-
-    # Get the similarity scores for all movies compared to the given movie
-    similarity_scores = movie_similarity[movie_index]
-
-    # Sort the scores from highest to lowest
-    similar_movie_indices = np.argsort(-similarity_scores)
-
-    # Obtén las mejores películas más similares
-    top_movie_indices = similar_movie_indices[1:6]
-
-    # Obtén los títulos de las mejores películas más similares
-    respuesta = [df2.iloc[index]['title'] for index in top_movie_indices]
-
-    return {'lista recomendada': respuesta}
+    # Ordenar la matriz de similaridad para obtener las películas más similares
+    similar_movie_indices = np.argsort(similarity_matrix[idx])
+    
+    # Seleccionar las primeras 5 películas más similares y obtener sus títulos
+    recommended_movies = []
+    for i in similar_movie_indices:
+        if data.iloc[i]['title'] != titulo:
+            recommended_movies.append(data.iloc[i]['title'])
+        if len(recommended_movies) == 5:
+            break
+    
+    # Devolver una lista con los títulos de las películas recomendadas
+    return {'lista recomendada': recommended_movies}
 
 
 
