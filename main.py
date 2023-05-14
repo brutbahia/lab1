@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 from sklearn.metrics.pairwise import pairwise_distances
 
-# Lee el archivo CSV en un DataFrame de Pandas
+# Lee el archivo CSV procesado en etl.ipynb en un DataFrame con Pandas 
 df = pd.read_csv('movies_dataset_modificado.csv', low_memory=False)
 
 
@@ -18,8 +18,11 @@ def indes():
 
 @app.get("/Mes/{mes}")
 def peliculas_mes(mes:str):
-            
+    meses_validos = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
+    if mes not in meses_validos:
+        return 'Formato no válido o mes mal escrito. Por favor, introducir con la primera letra en mayúscula. Ejemplo: Marzo'       
     # seleccionar las filas que corresponden al mes dado
+
     df_mes = df[df['release_month'] == mes]
     
     # contar la cantidad de filas
@@ -31,6 +34,10 @@ def peliculas_mes(mes:str):
 
 @app.get("/Dia/{dia}")
 def peliculas_dia(dia:str):
+    dias_validos = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+    if dia not in dias_validos:
+        return 'Formato no válido o día mal escrito. Por favor, introducir con la primera letra en mayúscula. Ejemplo: Miércoles'
+
     # cargar el conjunto de datos
         
     # seleccionar las filas que corresponden al mes dado
@@ -46,19 +53,21 @@ def peliculas_dia(dia:str):
 
 @app.get("/Franquicia/{franquicia}")
 def franquicia(franquicia:str):
-        
+     
     # seleccionar las filas que corresponden a la franquicia dada
     df_franquicia = df[df['name_collection'] == franquicia]
-    
+        
     # contar la cantidad de películas
     cantidad = len(df_franquicia)
-    
+        
     # calcular la ganancia total y promedio
     ganancia_total = df_franquicia['revenue'].sum()
     ganancia_promedio = df_franquicia['revenue'].mean()
-    
+        
     # retornar un diccionario con los resultados
     return {'franquicia':franquicia, 'cantidad':cantidad, 'ganancia_total':ganancia_total, 'ganancia_promedio':ganancia_promedio}
+    
+    
 
 @app.get("/Pais/{pais}")
 def peliculas_pais(pais:str):
@@ -99,33 +108,34 @@ def retorno(pelicula:str):
     
     return {'pelicula': pelicula, 'inversion': inversion, 'ganacia': ganancia, 'retorno': retorno, 'anio': anio}
 
+#Datos Preprocesados en ML.ipynb variables categoricas codificadas archivo pickle para mantener formato
+data= pd.read_pickle('Data_ML.pickle')
 
+from sklearn.model_selection import train_test_split
 
-df["name_Genres"] = df["name_Genres"].apply(lambda x: x.replace("[", "").replace("]", "").replace("'", "").replace(", ", ","))
+# Separar los datos en conjuntos de entrenamiento y prueba
+train_data, test_data = train_test_split(data, test_size=0.25, random_state=42)
 
-data = df[['title', 'vote_average', 'name_Genres', "release_year", "name_production_companies","overview"]]
+from sklearn.neighbors import NearestNeighbors
 
-similarity_matrix = pairwise_distances(data.pivot_table(index='name_Genres', columns='release_year', values='vote_average', fill_value=0), metric='cosine')
-
+# Crear una matriz de similitud entre películas
+model = NearestNeighbors(metric='hamming', algorithm='auto')
+model.fit(train_data.drop(['title'], axis=1))
 
 @app.get("/Recomendacion/{titulo}")
-def recomendacion(titulo:str):
-    # Buscar la película seleccionada por el usuario en el DataFrame
-    idx = data[data['title'] == titulo].index[0]
-    
-    # Ordenar la matriz de similaridad para obtener las películas más similares
-    similar_movie_indices = np.argsort(similarity_matrix[idx])
-    
-    # Seleccionar las primeras 5 películas más similares y obtener sus títulos
-    recommended_movies = []
-    for i in similar_movie_indices:
-        if data.iloc[i]['title'] != titulo:
-            recommended_movies.append(data.iloc[i]['title'])
-        if len(recommended_movies) == 5:
-            break
-    
-    # Devolver una lista con los títulos de las películas recomendadas
-    return {'lista recomendada': recommended_movies}
+def get_recommendations( movie_title):
+    # Obtener el índice de la película en el conjunto de datos
+    idx = data[data['title'] == movie_title].index[0]
+    # Obtener las películas más similares
+    distances, indices = model.kneighbors(data.iloc[idx, 1:].values.reshape(1, -1), n_neighbors=6)
+    # Obtener los títulos de las películas recomendadas
+    recommended_movies = [data.iloc[indices[0][i+1]]['title'] for i in range(5)]
+
+    return { 'lista recomendada':recommended_movies}
+
+
+
+
 
 
 
