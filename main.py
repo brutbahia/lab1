@@ -109,7 +109,7 @@ def retorno(pelicula:str):
     return {'pelicula': pelicula, 'inversion': inversion, 'ganacia': ganancia, 'retorno': retorno, 'anio': anio}
 
 #Datos Preprocesados en ML.ipynb variables categoricas codificadas archivo pickle para mantener formato
-data= pd.read_pickle('Data_ML.pickle')
+data= pd.read_csv('Data_ML.csv')
 
 from sklearn.model_selection import train_test_split
 
