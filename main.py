@@ -114,7 +114,7 @@ data= pd.read_csv('Data_ML.csv')
 from sklearn.model_selection import train_test_split
 
 # Separar los datos en conjuntos de entrenamiento y prueba
-train_data, test_data = train_test_split(data, test_size=0.25, random_state=42)
+train_data, test_data = train_test_split(data, test_size=0.20, random_state=42)
 
 from sklearn.neighbors import NearestNeighbors
 
