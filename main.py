@@ -119,7 +119,7 @@ train_data, test_data = train_test_split(data, test_size=0.25, random_state=42)
 from sklearn.neighbors import NearestNeighbors
 
 # Crear una matriz de similitud entre películas
-model = NearestNeighbors(metric='hamming', algorithm='auto')
+model = NearestNeighbors(n_neighbors=5, metric='euclidean')
 model.fit(train_data.drop(['title'], axis=1))
 
 @app.get("/Recomendacion/{titulo}")
