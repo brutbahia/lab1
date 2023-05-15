@@ -34,3 +34,6 @@ Los objetivos principales de este proyecto son:
 - `movies_data_modificado.csv` es el archivo del data set modificado luego de pasar por la transformacion de los datos`etl.ipynb`
 - `movies_data_modificado.pickle` es el archivo del data set modificado luego de pasar por la transformacion de los datos`etl.ipynb`, en formato pickle para mantener algunas caracteristicas del dataframe
 -  `pruebas para main.ipynb` es el archivo donde se probo las funciones de los endpoints
+
+##Contacto 
+- Me pueden contactar para cualquier duda a travez de mi correo personal rieszepa@gmail.com
